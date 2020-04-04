@@ -1,0 +1,114 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class player : MonoBehaviour
+{
+    Rigidbody2D rb;
+    Transform tf;
+    [SerializeField] private Transform feet;
+    [SerializeField] private Transform head;
+    Vector2 v;
+    float air_resis = 1;
+    bool onground = true;
+    private Vector3 m_Velocity = Vector3.zero;
+    [Range(0, .7f)] [SerializeField] private float m_MovementSmoothing = .05f;
+    [SerializeField] private LayerMask ground;
+    [SerializeField] private LayerMask lader;
+    [SerializeField] private bool air_controll;
+    [SerializeField] private float radius;
+    bool onlader;
+    bool onceiling;
+    [SerializeField] private float grav;
+    [SerializeField] private float jump_speed;
+    [SerializeField] private float climb_speed;
+    [SerializeField] private float run_speed;
+    //public Animator Animator;
+    [SerializeField] private bool occupied;
+    // Start is called before the first frame update
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        tf = GetComponent<Transform>();
+        v.x = 0;
+        v.y = 0;
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        check();
+        run();
+        jump();
+        climb();
+        move();
+        animate();
+    }
+    void check()
+    {
+        onground = false;
+        onlader = false;
+        Collider2D[] hit;
+        hit = Physics2D.OverlapCircleAll(feet.position,1 / 100 ,ground);
+        onground = hit.Length>=1;
+        hit = Physics2D.OverlapCircleAll(feet.position, radius, lader);
+        onlader = hit.Length >= 1;
+    }
+    void run()
+    {
+        v.x = 0;
+        if (onground||air_controll)
+        {
+            //v.x += (100 /( Mathf.Abs(v.x)+100))*Input.GetAxisRaw("Horizontal");
+            v.x=run_speed* Input.GetAxisRaw("Horizontal");
+        }
+    }
+
+    void jump()
+    {
+        float controlerY = Input.GetAxisRaw("Vertical");
+        if (onground && controlerY ==1)
+        {
+            Debug.Log("jump");
+            v.y = jump_speed * controlerY;
+            onground = false;
+        }
+        else
+        {
+            if (onceiling && onground)
+            {
+                v.y = 0;
+            }
+            else
+            {
+
+            }
+        }
+
+    }
+    void climb()
+    {
+        if (onlader)
+        {
+            rb.gravityScale = 0;
+            Debug.Log("climb");
+            v.y = climb_speed * Input.GetAxisRaw("Vertical");
+            onlader = false;
+        }
+        else
+        {
+            rb.gravityScale = grav;
+        }
+    }
+    void move()
+    {
+        //rb.velocity = Vector3.SmoothDamp(rb.velocity, v, ref m_Velocity, m_MovementSmoothing);
+        rb.velocity = v;
+    }
+    void animate()
+    {
+        //Animator.speed = v.x;
+        //Animator.is_jumping = v.y != 0;
+        //Animator.is_climbing = rb.gravityScale == 0;
+    }
+}
